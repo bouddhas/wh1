@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 
-st.title('some title')
+st.title('OC credit default project')
 st.write("Hello from Streamlit")
 
 @st.cache
@@ -16,3 +17,9 @@ def load_data(nrows):
     data = load_data(10000)
     # Notify the reader that the data was successfully loaded.
     data_load_state.text('Loading data...done!')
+
+st.subheader('retest')
+hist_values = np.histogram(
+    data[FLAG_OWN_CAR].dt, bins=2, range=(0,1))[0]
+st.bar_chart(hist_values)
+
