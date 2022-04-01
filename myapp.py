@@ -1,28 +1,55 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 st.title('OC credit default project')
-st.write("Hello from Streamlit")
+#st.write("Hello from Streamlit")
 
-uploaded_file = st.file_uploader("Choose a file")
-if uploaded_file is not None:
-  df = pd.read_csv(uploaded_file)
-  st.write(df)
+add_selectbox = st.sidebar.selectbox(
+    "What would you like to see?",
+    ("full clients", "one client")
+)
 
-  # Add some matplotlib code !
-  fig, ax = plt.subplots()
-  df.hist(
-    bins=8,
-    column="Age",
+if 'full clients' in add_selectbox : # If user selects full clients  
+    email_id = st.text_input('Enter the email address we should contact: ')
+
+df = pd.read_csv("data.csv")
+
+#uploaded_file = st.file_uploader("Choose a file")
+#if uploaded_file is not None:
+  #df = pd.read_csv(uploaded_file)
+  #st.write(df)
+
+st.subheader('Distribution of Age from 15 to 75 rolling every 5 years')
+hist_values = np.histogram(
+df['DAYS_BIRTH']/365, bins=13, range=(15,75))[0]
+st.bar_chart(hist_values)
+
+# Add some matplotlib code !
+fig, ax = plt.subplots()
+df.hist(
+    bins=10,
+    column="DAYS_EMPLOYED",
     grid=False,
-    figsize=(8, 8),
+    figsize=(5, 5),
     color="#86bf91",
     zorder=2,
     rwidth=0.9,
     ax=ax,)
-  st.write(fig)
+st.write(fig)
+  
+fig, ax = plt.subplots()
+df.hist(
+    bins=100,
+    column="AMT_CREDIT",
+    grid=False,
+    figsize=(5, 5),
+    color="#86bf91",
+    zorder=2,
+    rwidth=0.9,
+    ax=ax,)
+st.write(fig)
 
 
 
@@ -33,33 +60,36 @@ def load_data(nrows):
     data.rename(lowercase, axis='columns', inplace=True)
     return data
 
-# Create a text element and let the reader know the data is loading.
-data_load_state.text("Done! (using st.cache)")
-# Load 10,000 rows of data into the dataframe.
-data = load_data(10000)
-# Notify the reader that the data was successfully loaded.
-data_load_state.text("Done! (using st.cache)")
-
-if st.checkbox('Show raw data'):
-    st.subheader('Raw data')
-    st.write(data)
-
-st.subheader('retest')
-hist_values = np.histogram(
-    data[FLAG_OWN_CAR].dt, bins=2, range=(0,1))[0]
-st.bar_chart(hist_values)
 
 # Columns Summary
 
 st.subheader('| QUICK SUMMARY')
 
-col2, col3 = st.columns(2)
-# column 2 - Count of clients
+
+col1, col2, col3, col4 = st.columns(4)
+# column 1 - Count of clients phones
+with col1:
+    st.title(df.FLAG_PHONE.sum())
+    st.text('Clients owning phone')
+
+# column 2 - Count of female clients
 with col2:
-    st.title(df.SK_ID_CURR.count())
-    st.text('Clients')
+    st.title(df.CODE_GENDER_F.sum())
+    st.text('Female Clients')
 # column 3 - Sum of clients
 with col3:
-    st.title(df.size.sum())
+    st.title(df.SK_ID_CURR.count())
     st.text('CLIENTS')
+# column 4 - Sum of clients that have car
+with col4:
+    st.title(df.FLAG_OWN_CAR.sum())
+    st.text('Clients owning car')
+
+st.title("Streamlit Double Sliders")
+
+st.subheader("Slider")
+slider_range = st.slider("Double ended slider", value=[15,75])
+
+st.info("Our slider range has type: %s" %type(slider_range))
+st.write("Slider range:", slider_range, slider_range[0], slider_range[1])
 
