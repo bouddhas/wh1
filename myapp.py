@@ -61,8 +61,8 @@ if 'full clients' in add_selectbox : # If user selects full clients
     col1, col2, col3, col4 = st.columns(4)
 # column 1 - Count of clients phones
     with col1:
-        st.title(df.FLAG_PHONE.sum())
-        st.text('Clients owning phone')
+        st.title(df.FLAG_MOBIL.sum())
+        st.text('Clients owning mobile')
 
     # column 2 - Count of female clients
     with col2:
@@ -89,8 +89,13 @@ else :
     st.subheader("Insight of a client")
     add_selectbox_2 = st.selectbox(
     "Choose a client",
-    df.SK_ID_CURR
-)
+    df.SK_ID_CURR)
+
+    client_choice = df.loc[(df['SK_ID_CURR'] == add_selectbox_2)]
+    if 0 in client_choice.TARGET:
+        st.write('loan granted')
+    else :
+        st.write('loan not granted')
 
 
 
