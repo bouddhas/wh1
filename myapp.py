@@ -2,9 +2,28 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import shap
+import xgboost
+import streamlit.components.v1 as components
 
 st.title('OC credit default project')
 df = pd.read_csv("data.csv")
+
+shap.initjs()
+#@st.cache
+def st_shap(plot, height=None):
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    components.html(shap_html, height=height)
+
+# train XGBoost model
+X = df.drop(columns = 'TARGET')
+y = df[['TARGET']]
+model = xgboost.train({"learning_rate": 0.2, 'max_depth': 3, 'min_child_weight': 3, 'n_estimators': 100}, xgboost.DMatrix(X, label=y), 100)
+
+# explain the model's predictions using SHAP
+# (same syntax works for LightGBM, CatBoost, scikit-learn and spark models)
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X)
 
 add_selectbox = st.sidebar.selectbox(
     "What would you like to see?",
@@ -28,7 +47,7 @@ if 'full clients' in add_selectbox : # If user selects full clients
 
 # Add some matplotlib code !
     df["Years_employed"] = df['DAYS_EMPLOYED']/365*-1
-
+    st.subheader('Distribution of years employed')
     fig, ax = plt.subplots()
     df.hist(
         bins=20,
@@ -97,5 +116,21 @@ else :
     else :
         st.write('loan not granted')
 
+    # explain the model's predictions using SHAP
+    # (same syntax works for LightGBM, CatBoost, scikit-learn and spark models)
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X)
+
+    # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
+    st_shap(shap.force_plot(explainer.expected_value, shap_values[0,:], X.iloc[0,:]))
+
+    # visualize the training set predictions
+    #st_shap(shap.force_plot(explainer.expected_value, shap_values, X), 400)
+    #st.pyplot(shap.plots.force(shap_values[0],matplotlib=True))
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    shap.summary_plot(shap_values, X, plot_type='bar')
+    st.pyplot(fig)
+    #shap_values = shap.TreeExplainer(model).shap_values(X_train)
+    #shap.summary_plot(shap_values, X_train, plot_type="bar")
 
 
