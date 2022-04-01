@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 st.title('OC credit default project')
-#st.write("Hello from Streamlit")
+df = pd.read_csv("data.csv")
 
 add_selectbox = st.sidebar.selectbox(
     "What would you like to see?",
@@ -12,17 +12,27 @@ add_selectbox = st.sidebar.selectbox(
 )
 
 if 'full clients' in add_selectbox : # If user selects full clients  
-    df = pd.read_csv("data.csv")
-    st.subheader('Distribution of Age from 15 to 75 rolling every 5 years')
-    hist_values = np.histogram(
-    df['DAYS_BIRTH']/365, bins=13, range=(15,75))[0]
-    st.bar_chart(hist_values)
-
-# Add some matplotlib code !
+    df["AGE"] = df['DAYS_BIRTH']/365
+    st.subheader('Distribution of Age')
     fig, ax = plt.subplots()
     df.hist(
-        bins=10,
-        column="DAYS_EMPLOYED",
+        bins=20,
+        column="AGE",
+        grid=False,
+        figsize=(5, 5),
+        color="#86bf91",
+        zorder=2,
+        rwidth=0.9,
+        ax=ax,)
+    st.write(fig)
+
+# Add some matplotlib code !
+    df["Years_employed"] = df['DAYS_EMPLOYED']/365*-1
+
+    fig, ax = plt.subplots()
+    df.hist(
+        bins=20,
+        column="Years_employed",
         grid=False,
         figsize=(5, 5),
         color="#86bf91",
@@ -74,4 +84,13 @@ if 'full clients' in add_selectbox : # If user selects full clients
 
     st.info("Our slider range has type: %s" %type(slider_range))
     st.write("Slider range:", slider_range, slider_range[0], slider_range[1])
+
+else : 
+    st.subheader("Insight of a client")
+    add_selectbox_2 = st.selectbox(
+    "Choose a client",
+    df.SK_ID_CURR
+)
+
+
 
